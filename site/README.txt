@@ -99,3 +99,4 @@ VERSION 2.9
 
 VERSION 3.0
 - Automatic anonymous layout reports (AUTO_REPORT_URL + github/server/report.php) and automatic deployment (github/.github/workflows/deploy.yml). See github/README.txt.
+
