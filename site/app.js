@@ -758,7 +758,7 @@ $('#comboBody').addEventListener('click', function (e) {
 
 
 /* ---------- v3.0: automatic anonymous layout reports (no user action) ---------- */
-var AUTO_REPORT_URL = '';   // e.g. '/ocr/report.php' once report.php is installed; empty = off
+var AUTO_REPORT_URL = '';   // e.g. '/analysis/report.php' once report.php is installed; empty = off
 var sentLayouts = {};
 function layoutReport(m) {
   var me = m.meta || {}, safe = function (w) { return String(w).replace(/[0-9]/g, '#').slice(0, 60); };

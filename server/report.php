@@ -1,6 +1,6 @@
 <?php
 // Receives an anonymous layout report from the tool and opens a GitHub issue. The GitHub token stays on this server.
-// Install: upload to /ocr/report.php, copy report-config.sample.php to ONE LEVEL ABOVE public_html as yv-report-config.php and fill it in.
+// Install: upload to /analysis/report.php, copy report-config.sample.php to ONE LEVEL ABOVE public_html as yv-report-config.php and fill it in.
 header('Content-Type: application/json'); header('X-Content-Type-Options: nosniff');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit('{"ok":false}'); }
 $cfg = @include dirname($_SERVER['DOCUMENT_ROOT']) . '/yv-report-config.php';

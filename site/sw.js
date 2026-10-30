@@ -1,5 +1,5 @@
 /* Offline support: app shell + reading libraries are cached after the first visit. Nothing about your statements is ever stored. */
-var V = 'yv-siq-v21';
+var V = 'yv-siq-v30';
 var SHELL = ['./', 'index.html', 'style.css', 'app.js', 'engine.js', 'xlsxout.js', 'manifest.webmanifest', 'icon.svg'];
 self.addEventListener('install', function (e) { e.waitUntil(caches.open(V).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); })); });
 self.addEventListener('activate', function (e) { e.waitUntil(caches.keys().then(function (k) { return Promise.all(k.filter(function (x) { return x !== V; }).map(function (x) { return caches.delete(x); })); }).then(function () { return self.clients.claim(); })); });

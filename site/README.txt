@@ -1,7 +1,7 @@
 YourView Tools — Bank Statement Analyzer (free, client-side)
 ============================================================
 
-UPLOAD TO HOSTINGER  (e.g. www.yourview.in/ocr)
+UPLOAD TO HOSTINGER  (e.g. www.yourview.in/analysis)
 1. hPanel -> File Manager -> public_html -> create folder "ocr"
 2. Upload these FIVE files into that folder:
       index.html
@@ -9,7 +9,7 @@ UPLOAD TO HOSTINGER  (e.g. www.yourview.in/ocr)
       app.js
       engine.js
       xlsxout.js
-3. Open https://www.yourview.in/ocr/  (no database, PHP or Node needed). Turn on SSL + Force HTTPS.
+3. Open https://www.yourview.in/analysis/  (no database, PHP or Node needed). Turn on SSL + Force HTTPS.
 
 WHAT IT DOES
 - Reads PDF (text and scanned), photos, Excel and CSV statements of any bank.
