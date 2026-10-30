@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YourView Tools — Bank Statement Analyzer (runs in your browser)</title>
+<meta name="description" content="Free bank statement analyzer by YourView Tools. Upload PDF, scanned or Excel statements from any bank and get a multi-sheet Excel report with monthly analysis, average balance, risk insights, FOIR, cheque returns, cash, EMI and spend categories. Runs in your browser — files never leave your device.">
+<meta name="theme-color" content="#1F6F5C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta property="og:title" content="Bank Statement Analyzer · YourView Tools">
+<meta property="og:description" content="Any bank, any format. PDF / scanned / Excel statements to a multi-sheet analysis report — free, private, in your browser.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">
+      <div class="logo-mark">YV</div>
+      <div class="logo-text">
+        <div class="brand">YourView Tools</div>
+        <div class="toolname">Bank Statement Analyzer</div>
+      </div>
+    </div>
+    <div class="privacy-pill"><span class="dot"></span> Files never leave this browser tab</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="kicker">A bank statement analyzer with nothing to upload</div>
+      <h1>Read any bank statement, right where it already is.</h1>
+      <p class="lede">Drop statements from any bank as PDF, scan, photo, Excel or CSV. This tool reads and analyses them inside your browser and gives you a multi-sheet Excel report — no server, no account, no waiting on an upload bar.</p>
+    </div>
+
+    <div class="tool">
+      <div class="dropzone" id="drop" tabindex="0" role="button" aria-label="Upload bank statements">
+        <svg class="drop-icon" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M23 6v24M23 6L14 15M23 6l9 9" stroke="#1F6F5C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 32v4a4 4 0 0 0 4 4h22a4 4 0 0 0 4-4v-4" stroke="#1F6F5C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h3>Drop bank statements here</h3>
+        <p>or <span class="browse">choose files</span> from your device — several months or accounts at once</p>
+        <p style="margin-top:8px;font-size:.85rem">PDF, scanned PDF, photos (JPG/PNG), Excel (XLSX, XLS), LibreOffice (ODS), CSV / TXT / HTML · password-protected PDFs will ask for the password</p>
+        <input id="pick" type="file" multiple accept=".pdf,.xlsx,.xlsm,.xlsb,.xls,.xml,.ods,.fods,.csv,.tsv,.txt,.html,.htm,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff" hidden>
+      </div>
+
+      <div class="opts">
+        <label>Reading mode
+          <select id="optMode"><option value="auto">Auto-detect (recommended)</option><option value="header">Table with headers</option><option value="line">Line pattern</option></select></label>
+        <label>OCR
+          <select id="optOcr"><option value="auto">Auto (scanned pages only)</option><option value="force">Always OCR</option><option value="off">Off</option></select></label>
+        <label>High-value &ge; &#8377; <input id="optHV" type="number" value="100000" min="0" step="1000" style="width:110px"></label>
+        <label title="Only for Overdraft / Cash Credit accounts. Leave empty if the statement already shows the limit or the account has none.">OD / CC limit &#8377; <input id="optLimit" type="number" placeholder="optional" min="0" step="10000" style="width:120px"></label>
+        <label title="Companies or people whose credits should be treated as internal (sister concerns, group firms, family accounts). Separate names with commas." style="flex:1 1 100%">Sister concerns / related parties <input id="optRelated" type="text" placeholder="e.g. Kenfront Technologies, Rajesh Traders (optional)" style="width:min(100%,420px)"></label>
+        <label title="When on, a company whose name starts with the same distinctive word as the account holder is treated as a probable sister concern."><input type="checkbox" id="optSister" checked> Auto-detect similar-named sister concerns</label>
+        <label title="Off: files from other accounts or banks are kept as separate accounts you can pick from after upload. On: they are rejected with a pop-up."><input type="checkbox" id="optStrict"> Reject files from a different account</label>
+        <button class="btn alt sm" id="reprocess" style="display:none">&#8635; Re-read with these settings</button>
+      </div>
+
+      <div class="panel" id="files" style="display:none"></div>
+      <div class="panel" id="selPanel" style="display:none">
+        <span class="group-label">Choose what to analyse</span>
+        <div class="selgrid">
+          <label>Account / statement set<select id="selAcct"></select></label>
+          <label>Bank<select id="selBank"></select></label>
+          <label>Analyse from<select id="selFrom"></select></label>
+          <label>to<select id="selTo"></select></label>
+        </div>
+        <small class="hint" id="selHint"></small>
+        <div style="margin-top:10px"><button class="btn alt sm" id="btnCombo" style="display:none">Combined view of all accounts</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="comboSec" style="display:none">
+  <div class="wrap">
+    <div class="card" id="comboBody"></div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <div class="card"><div class="acct" id="acct"></div></div>
+    <div class="stats" id="stats"></div>
+    <div id="quality"></div>
+    <div class="actions">
+      <button class="btn dark" id="dlXlsx">Download Excel report (multi-sheet)</button>
+      <button class="btn alt" id="dlCsv">Transactions CSV</button>
+      <button class="btn alt" id="dlCopy" title="Copy a plain-text summary for an email or note">Copy summary</button>
+      <button class="btn alt" id="dlReport" title="Saves a small file with only the column layout of this statement (no names, amounts or narrations) that you can send to the developer">Report a reading problem</button>
+      <button class="btn alt" id="dlPrint" title="One-page summary you can print or save as PDF">Print / PDF summary</button>
+      <span class="sp"></span>
+      <label>Analysis period
+        <select id="optWin"><option value="0">Full period</option><option value="3">Last 3 months</option><option value="6">Last 6 months</option><option value="12">Last 12 months</option></select></label>
+      <button class="btn alt sm" id="clearAll">Clear all</button>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="filters" id="filters">
+      <input type="search" id="fq" placeholder="Search narration, party or reference…" aria-label="Search transactions">
+      <select id="fcat" aria-label="Category"></select>
+      <select id="fdir" aria-label="Direction"><option value="">Debits &amp; credits</option><option value="D">Debits only</option><option value="C">Credits only</option><option value="X">Flagged (bounce, cash, EMI…)</option><option value="M">Balance mismatch</option></select>
+      <span class="cnt" id="fcnt"></span>
+    </div>
+    <div class="tw" id="tabBody"></div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="num">01</div>
+        <h3>Drop your statements</h3>
+        <p>Text PDFs are read directly by your browser's own PDF engine. Scans and photos go through OCR on your device. Excel and CSV are read as tables.</p>
+      </div>
+      <div class="step">
+        <div class="num">02</div>
+        <h3>It reads and checks, right here</h3>
+        <p>The engine finds the transaction table, columns and date format by itself, then checks every row against the running balance so nothing slips through.</p>
+      </div>
+      <div class="step">
+        <div class="num">03</div>
+        <h3>Download the report</h3>
+        <p>Pick the account, bank and period, then save a multi-sheet Excel report with monthly analysis, risk insights, FOIR, cheque returns, cash and EMIs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="wrap why-grid">
+    <h2>Why analyse locally</h2>
+    <div class="why-list">
+      <div class="why-item">
+        <h3>Nothing to intercept</h3>
+        <p>Bank statements are among the most sensitive documents you own. Here they stay on your machine instead of passing through a third party's server.</p>
+      </div>
+      <div class="why-item">
+        <h3>No upload queue or file cap</h3>
+        <p>Processing happens in your browser's memory, so a year of statements isn't rationed by an upload limit or a paywall.</p>
+      </div>
+      <div class="why-item">
+        <h3>Passwords stay with you</h3>
+        <p>If a PDF is locked, the password is used only inside this tab to open it. It is never sent anywhere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sheets-sec">
+  <div class="wrap">
+    <h2>What's in the Excel report</h2>
+    <div class="sheets" id="sheetList"></div>
+  </div>
+</section>
+
+<section class="faq-sec">
+  <div class="wrap">
+    <h2>Frequently asked questions</h2>
+    <div class="faq-list" id="faq"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>YourView Tools — Bank Statement Analyzer, and more tools that stay on your device.</p>
+    <p>An automated reading aid — verify outputs against the original statements. Built with pdf.js, SheetJS and Tesseract.js</p>
+  </div>
+</footer>
+
+<div id="printSum" aria-hidden="true"></div>
+
+<dialog id="dlgErr"><div class="dlg">
+  <div class="ico">!</div><h3 id="errTitle"></h3>
+  <div id="errBody"></div>
+  <div class="row"><button class="btn" id="errOk">OK, got it</button></div>
+</div></dialog>
+
+<dialog id="dlgPwd"><form method="dialog" class="dlg" id="pwdForm">
+  <div class="ico">&#128274;</div><h3>Password required</h3>
+  <p id="pwdMsg" style="margin:0 0 10px;color:var(--ink-soft)"></p>
+  <input id="pwdIn" type="password" autocomplete="off" placeholder="Enter PDF password">
+  <div id="pwdBad" style="color:var(--bad);font-size:.85rem;margin-top:6px;display:none">That password did not open the file. Please try again.</div>
+  <p style="margin:8px 0 0;color:var(--ink-soft);font-size:.82rem">The password is used only inside your browser to open this file. It is never sent or stored. Entered passwords are tried automatically on your other files in this session.</p>
+  <div class="row"><button type="button" class="btn alt" id="pwdSkip">Skip this file</button><button type="submit" class="btn" id="pwdOk" value="ok">Unlock</button></div>
+</form></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="engine.js"></script>
+<script src="xlsxout.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

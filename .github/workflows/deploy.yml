@@ -1,0 +1,26 @@
+name: Deploy to Hostinger
+on:
+  push:
+    branches: [main]
+    paths: ['site/**']
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run regression tests
+        run: |
+          cd site
+          for t in test test2 test3 test4 test5 test6 test7 test8 test9 test10 test11; do node $t.js | tail -1 | grep -q "ALL PASSED" || { echo "$t failed"; exit 1; }; done
+      - name: Upload to website root over FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./site/
+          server-dir: ${{ secrets.FTP_DIR }}
+          exclude: |
+            **/test*.js
+            **/.git*
+            **/node_modules/**

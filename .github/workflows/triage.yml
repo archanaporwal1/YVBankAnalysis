@@ -1,0 +1,24 @@
+name: Triage layout report
+on:
+  issues:
+    types: [opened]
+permissions:
+  issues: write
+jobs:
+  triage:
+    if: contains(github.event.issue.labels.*.name, 'layout-report')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Extract JSON and triage
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          node -e "const b=process.env.BODY||'';const m=b.match(/\`\`\`json\s*([\s\S]*?)\`\`\`/);if(!m){console.error('no json');process.exit(1)}require('fs').writeFileSync('report.json',m[1])"
+          node tools/triage.js report.json > comment.md
+      - name: Comment on the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment ${{ github.event.issue.number }} --repo ${{ github.repository }} --body-file comment.md
